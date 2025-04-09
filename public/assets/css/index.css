@@ -1,0 +1,183 @@
+/* Base Styles */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #F8F9FB;
+    color: var(--dark);
+}
+
+/* Card Styles */
+.card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+/* Stats Card Styles */
+.stat-card {
+    height: 100%;
+    background-color: var(--white);
+    transition: transform 0.2s ease;
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-size: 20px;
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 0;
+    color: var(--dark);
+}
+
+.stat-label {
+    color: #9CA3AF;
+    font-size: 14px;
+    margin-bottom: 0;
+}
+
+/* Utility Classes */
+.bg-peach-light {
+    background-color: var(--peach-light);
+    color: var(--peach-dark);
+}
+
+.text-peach {
+    color: var(--peach-dark);
+}
+
+.btn-peach {
+    background-color: var(--peach);
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.btn-peach:hover {
+    background-color: var(--peach-dark);
+    color: white;
+}
+
+/* Transaction Styles */
+.transaction-item {
+    padding: 16px;
+    border-bottom: 1px solid var(--gray);
+    transition: background-color 0.3s;
+}
+
+.transaction-item:last-child {
+    border-bottom: none;
+}
+
+.transaction-item:hover {
+    background-color: #F9FAFB;
+}
+
+.transaction-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 16px;
+}
+
+.transaction-title {
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.transaction-date {
+    font-size: 12px;
+    color: #9CA3AF;
+}
+
+.expense-amount {
+    font-weight: 600;
+    color: #EF4444;
+}
+
+.income-amount {
+    font-weight: 600;
+    color: #10B981;
+}
+
+/* Section Styling */
+.section-header {
+    margin-bottom: 24px;
+}
+
+.dashboard-header {
+    margin-bottom: 32px;
+}
+
+/* Responsive Styles */
+@media (max-width: 991.98px) {
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 15px;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .stat-card {
+        margin-bottom: 15px;
+    }
+
+    .transaction-item {
+        flex-wrap: wrap;
+    }
+
+    .transaction-icon {
+        margin-bottom: 10px;
+    }
+
+    .transaction-item .flex-grow-1 {
+        width: 100%;
+        margin-bottom: 10px;
+        order: 2;
+    }
+
+    .transaction-item .expense-amount,
+    .transaction-item .income-amount {
+        width: 100%;
+        text-align: left;
+        margin-left: 56px;
+        order: 3;
+    }
+}
+
+/* Improved layout for small screens */
+@media (max-width: 575.98px) {
+    .container.py-5 {
+        padding-left: 15px !important;
+        padding-right: 15px !important;
+    }
+
+    .dashboard-header button {
+        width: 100%;
+    }
+
+    .stat-value {
+        font-size: 20px;
+    }
+
+    .card-body {
+        padding: 15px !important;
+    }
+}
