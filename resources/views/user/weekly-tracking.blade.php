@@ -178,8 +178,15 @@
 
                                         <div class="d-flex justify-content-between align-items-center mb-4">
                                             <div>
-                                                <p class="mb-0 fw-bold">Deficit: <span id="deficitValue"
-                                                        class="ms-2">$0.00</span></p>
+                                                <p class="mb-0 fw-bold">
+                                                    <span id="deficitLabel">Balance:</span>
+                                                    <i id="deficitIcon" class="fas fa-check-circle text-success me-1"
+                                                        style="display: none;"></i>
+                                                    <i id="deficitWarningIcon"
+                                                        class="fas fa-exclamation-circle text-danger me-1"
+                                                        style="display: none;"></i>
+                                                    <span id="deficitValue" class="ms-2">$0.00</span>
+                                                </p>
                                             </div>
                                             <button type="submit" class="btn btn-peach">Save Week</button>
                                         </div>
@@ -425,11 +432,16 @@
                 const collection = parseFloat($('#collection').val()) || 0;
                 const deficit = collection - payable;
 
-                $('#deficitValue').text(`$${deficit.toFixed(2)}`);
                 if (deficit < 0) {
+                    $('#deficitValue').text(`-$${Math.abs(deficit).toFixed(2)}`);
                     $('#deficitValue').removeClass('text-success').addClass('text-danger');
+                    $('#deficitWarningIcon').show();
+                    $('#deficitIcon').hide();
                 } else {
+                    $('#deficitValue').text(`$${deficit.toFixed(2)}`);
                     $('#deficitValue').removeClass('text-danger').addClass('text-success');
+                    $('#deficitIcon').show();
+                    $('#deficitWarningIcon').hide();
                 }
             }
         });
