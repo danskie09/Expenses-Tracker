@@ -3,25 +3,25 @@
         <div class="logo fs-4 mb-4 mb-lg-5 text-center text-lg-start">💰 ExpTra</div>
         <div
             class="nav flex-row flex-lg-column justify-content-between justify-content-lg-start flex-nowrap overflow-auto">
-            <a href="#dashboard" class="navbar-item active mb-0 mb-lg-2">
-                <i class="fas fa-th-large me-0 me-lg-3"></i>
+            <a href="{{ route('dashboard') }}"
+                class="navbar-item {{ request()->routeIs('dashboard') ? 'active' : '' }} mb-0 mb-lg-2">
+                <i class="fas fa-home me-0 me-lg-3"></i>
                 <span class="d-none d-lg-inline">Dashboard</span>
             </a>
-            <a href="#analytics" class="navbar-item mb-0 mb-lg-2">
-                <i class="fas fa-chart-pie me-0 me-lg-3"></i>
-                <span class="d-none d-lg-inline">Analytics</span>
+            <a href="{{ route('financial-goals') }}"
+                class="navbar-item {{ request()->routeIs('financial-goals') ? 'active' : '' }} mb-0 mb-lg-2">
+                <i class="fas fa-bullseye me-0 me-lg-3"></i>
+                <span class="d-none d-lg-inline">Financial Goals</span>
             </a>
-            <a href="#transactions" class="navbar-item mb-0 mb-lg-2">
-                <i class="fas fa-wallet me-0 me-lg-3"></i>
-                <span class="d-none d-lg-inline">Transactions</span>
+            <a href="{{ route('weekly-tracking') }}"
+                class="navbar-item {{ request()->routeIs('weekly-tracking') ? 'active' : '' }} mb-0 mb-lg-2">
+                <i class="fas fa-calendar-week me-0 me-lg-3"></i>
+                <span class="d-none d-lg-inline">Weekly Tracking</span>
             </a>
-            <a href="#cards" class="navbar-item mb-0 mb-lg-2">
-                <i class="fas fa-credit-card me-0 me-lg-3"></i>
-                <span class="d-none d-lg-inline">Cards</span>
-            </a>
-            <a href="#settings" class="navbar-item mb-0">
-                <i class="fas fa-cog me-0 me-lg-3"></i>
-                <span class="d-none d-lg-inline">Settings</span>
+            <a href="{{ route('reports') }}"
+                class="navbar-item {{ request()->routeIs('reports') ? 'active' : '' }} mb-0 mb-lg-2">
+                <i class="fas fa-chart-bar me-0 me-lg-3"></i>
+                <span class="d-none d-lg-inline">Reports</span>
             </a>
 
             <!-- Logout Link -->
