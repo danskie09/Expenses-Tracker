@@ -63,14 +63,20 @@ class FinancialGoalController extends Controller
      */
     public function show($id)
     {
-        $goal = FinancialGoal::with('weeks.breakdowns')
-            ->where('user_id', Auth::id())
-            ->findOrFail($id);
-            
-        return response()->json([
-            'status' => true,
-            'goal' => $goal
-        ]);
+        try {
+            $goal = FinancialGoal::where('user_id', Auth::id())
+                ->findOrFail($id);
+
+            return response()->json([
+                'status' => true,
+                'goal' => $goal
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Goal not found'
+            ], 404);
+        }
     }
 
     /**

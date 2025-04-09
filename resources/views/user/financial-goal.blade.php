@@ -394,15 +394,23 @@
                 });
             });
 
-            // Open edit modal with goal data
-            $('.edit-goal').on('click', function(e) {
+            // Open edit modal with goal data (using event delegation)
+            $(document).on('click', '.edit-goal', function(e) {
                 e.preventDefault();
                 let goalId = $(this).data('id');
+                console.log("Edit clicked for goal ID:", goalId); // Debug log
+
+                // Ensure goalId is valid
+                if (!goalId) {
+                    toastr.error('Goal ID not found. Please refresh the page.');
+                    return;
+                }
 
                 $.ajax({
                     type: 'GET',
                     url: `/financial-goals/${goalId}`,
                     success: function(response) {
+                        console.log("Goal data received:", response); // Debug log
                         if (response.status) {
                             let goal = response.goal;
 
@@ -416,7 +424,13 @@
 
                             // Show modal
                             $('#editGoalModal').modal('show');
+                        } else {
+                            toastr.error('Error loading goal details: ' + response.message);
                         }
+                    },
+                    error: function(xhr) {
+                        console.error("AJAX error:", xhr);
+                        toastr.error('Error loading goal details. Please try again.');
                     }
                 });
             });
@@ -426,6 +440,11 @@
                 e.preventDefault();
                 let goalId = $('#edit_goal_id').val();
                 let formData = $(this).serialize();
+
+                if (!goalId) {
+                    toastr.error('Missing goal ID. Please try again.');
+                    return;
+                }
 
                 $.ajax({
                     type: 'PUT',
@@ -440,23 +459,35 @@
 
                             // Reload the page to show changes
                             location.reload();
+                        } else {
+                            toastr.error('Error updating goal: ' + response.message);
                         }
                     },
                     error: function(xhr) {
-                        let errors = xhr.responseJSON.errors;
-
-                        // Display errors
-                        $.each(errors, function(key, value) {
-                            toastr.error(value[0]);
-                        });
+                        console.error("Update error:", xhr);
+                        if (xhr.responseJSON && xhr.responseJSON.errors) {
+                            let errors = xhr.responseJSON.errors;
+                            // Display errors
+                            $.each(errors, function(key, value) {
+                                toastr.error(value[0]);
+                            });
+                        } else {
+                            toastr.error('An error occurred. Please try again.');
+                        }
                     }
                 });
             });
 
-            // Open delete confirmation modal
-            $('.delete-goal').on('click', function(e) {
+            // Open delete confirmation modal (using event delegation)
+            $(document).on('click', '.delete-goal', function(e) {
                 e.preventDefault();
                 let goalId = $(this).data('id');
+
+                if (!goalId) {
+                    toastr.error('Goal ID not found. Please refresh the page.');
+                    return;
+                }
+
                 $('#delete_goal_id').val(goalId);
                 $('#deleteGoalModal').modal('show');
             });
@@ -464,6 +495,12 @@
             // Confirm delete
             $('#confirmDelete').on('click', function() {
                 let goalId = $('#delete_goal_id').val();
+
+                if (!goalId) {
+                    toastr.error('Goal ID not found. Please try again.');
+                    $('#deleteGoalModal').modal('hide');
+                    return;
+                }
 
                 $.ajax({
                     type: 'DELETE',
@@ -482,16 +519,28 @@
                             if ($('.goal-card').length === 0) {
                                 $('#emptyState').show();
                             }
+                        } else {
+                            toastr.error('Error deleting goal: ' + response.message);
                         }
+                    },
+                    error: function(xhr) {
+                        console.error("Delete error:", xhr);
+                        toastr.error('Error deleting goal. Please try again.');
                     }
                 });
             });
 
-            // View details
-            $('.view-details').on('click', function(e) {
+            // View details (using event delegation)
+            $(document).on('click', '.view-details', function(e) {
                 e.preventDefault();
                 let goalId = $(this).data('id');
-                // Navigate to a details page or open a modal with details
+
+                if (!goalId) {
+                    toastr.error('Goal ID not found. Please refresh the page.');
+                    return;
+                }
+
+                // Navigate to details page
                 window.location.href = `/financial-goals/${goalId}/details`;
             });
         });

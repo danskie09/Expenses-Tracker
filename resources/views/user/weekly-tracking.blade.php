@@ -137,9 +137,6 @@
                                 <div class="card-header bg-light py-3">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <h6 class="mb-0 fw-bold">Week Details</h6>
-                                        <button id="addBreakdownBtn" class="btn btn-sm btn-outline-peach">
-                                            <i class="fas fa-plus me-1"></i> Add Breakdown
-                                        </button>
                                     </div>
                                 </div>
                                 <div class="card-body">
@@ -187,30 +184,6 @@
                                             <button type="submit" class="btn btn-peach">Save Week</button>
                                         </div>
                                     </form>
-
-                                    <hr class="my-4">
-
-                                    <!-- Breakdowns Section -->
-                                    <div id="breakdownsSection">
-                                        <h6 class="mb-3">Breakdowns</h6>
-                                        <div id="breakdownsList" class="table-responsive">
-                                            <table class="table table-hover">
-                                                <thead class="table-light">
-                                                    <tr>
-                                                        <th>Description</th>
-                                                        <th>Amount</th>
-                                                        <th class="text-end">Actions</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <!-- Breakdowns will be loaded here dynamically -->
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        <div id="noBreakdowns" class="text-center py-3 text-muted">
-                                            <p>No breakdowns added yet</p>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -269,43 +242,6 @@
                 <div class="modal-footer border-0">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" form="newWeekForm" class="btn btn-peach">Save Week</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Add Breakdown Modal -->
-    <div class="modal fade" id="addBreakdownModal" tabindex="-1" aria-labelledby="addBreakdownModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header border-0">
-                    <h5 class="modal-title" id="addBreakdownModalLabel">Add Breakdown</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="breakdownForm">
-                        @csrf
-                        <input type="hidden" id="breakdownWeekId" name="week_id">
-
-                        <div class="mb-3">
-                            <label for="description" class="form-label">Description</label>
-                            <input type="text" class="form-control" id="description" name="description" required
-                                placeholder="e.g., Rent, Electricity, Groceries">
-                        </div>
-                        <div class="mb-3">
-                            <label for="amount" class="form-label">Amount</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" class="form-control" id="amount" name="amount"
-                                    step="0.01" min="0" required>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" form="breakdownForm" class="btn btn-peach">Add</button>
                 </div>
             </div>
         </div>
@@ -426,51 +362,6 @@
                 calculateDeficit();
             });
 
-            // Add Breakdown button click handler
-            $('#addBreakdownBtn').on('click', function() {
-                $('#breakdownWeekId').val(selectedWeekId);
-                $('#addBreakdownModal').modal('show');
-            });
-
-            // Breakdown form submission
-            $('#breakdownForm').on('submit', function(e) {
-                e.preventDefault();
-
-                $.ajax({
-                    url: '/financial-goal-breakdowns',
-                    type: 'POST',
-                    data: $(this).serialize(),
-                    success: function(response) {
-                        $('#addBreakdownModal').modal('hide');
-                        $('#breakdownForm')[0].reset();
-                        toastr.success('Breakdown added successfully!');
-                        loadBreakdowns(selectedWeekId);
-                    },
-                    error: function(xhr) {
-                        const errors = xhr.responseJSON.errors;
-                        Object.keys(errors).forEach(key => {
-                            toastr.error(errors[key][0]);
-                        });
-                    }
-                });
-            });
-
-            // Delete breakdown handler
-            $(document).on('click', '.delete-breakdown', function() {
-                const breakdownId = $(this).data('id');
-
-                if (confirm('Are you sure you want to delete this breakdown?')) {
-                    $.ajax({
-                        url: `/financial-goal-breakdowns/${breakdownId}`,
-                        type: 'DELETE',
-                        success: function(response) {
-                            toastr.success('Breakdown deleted successfully!');
-                            loadBreakdowns(selectedWeekId);
-                        }
-                    });
-                }
-            });
-
             // Function to load weeks for a goal
             function loadWeeks(goalId) {
                 $.ajax({
@@ -524,44 +415,6 @@
 
                         // Update deficit display
                         $('#deficitValue').text(`$${parseFloat(week.deficit).toFixed(2)}`);
-
-                        // Load breakdowns for this week
-                        loadBreakdowns(weekId);
-                    }
-                });
-            }
-
-            // Function to load breakdowns for a week
-            function loadBreakdowns(weekId) {
-                $.ajax({
-                    url: `/financial-goal-weeks/${weekId}/breakdowns`,
-                    type: 'GET',
-                    success: function(response) {
-                        const breakdowns = response.breakdowns;
-                        const tbody = $('#breakdownsList tbody');
-                        tbody.empty();
-
-                        if (breakdowns.length > 0) {
-                            $('#noBreakdowns').hide();
-                            $('#breakdownsList').show();
-
-                            breakdowns.forEach(breakdown => {
-                                tbody.append(`
-                                    <tr>
-                                        <td>${breakdown.description}</td>
-                                        <td>$${parseFloat(breakdown.amount).toFixed(2)}</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-danger delete-breakdown" data-id="${breakdown.id}">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                `);
-                            });
-                        } else {
-                            $('#breakdownsList').hide();
-                            $('#noBreakdowns').show();
-                        }
                     }
                 });
             }

@@ -37,12 +37,4 @@ class FinancialGoalBreakdown extends Model
     {
         return $this->belongsTo(FinancialGoalWeeks::class, 'week_id');
     }
-    
-    /**
-     * Get the financial goal through the week.
-     */
-    public function financialGoal()
-    {
-        return $this->week->financialGoal;
-    }
 }

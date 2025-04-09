@@ -38,7 +38,6 @@ class FinancialGoalWeeks extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'week_number' => 'integer',
         'payable' => 'decimal:2',
         'collection' => 'decimal:2',
         'deficit' => 'decimal:2',
@@ -53,7 +52,7 @@ class FinancialGoalWeeks extends Model
     }
     
     /**
-     * Get the breakdowns for this week.
+     * Get the breakdowns for the week.
      */
     public function breakdowns(): HasMany
     {
@@ -61,24 +60,26 @@ class FinancialGoalWeeks extends Model
     }
     
     /**
-     * Calculate deficit on save
+     * Boot method to automatically set the deficit.
      */
     protected static function boot()
     {
         parent::boot();
         
-        static::saving(function ($week) {
-            if (isset($week->collection) && isset($week->payable)) {
-                $week->deficit = $week->collection - $week->payable;
-            }
+        static::creating(function ($model) {
+            $model->deficit = $model->collection - $model->payable;
+        });
+        
+        static::updating(function ($model) {
+            $model->deficit = $model->collection - $model->payable;
         });
     }
     
     /**
-     * Get the total breakdown amount
+     * Get the total breakdown amount.
      */
     public function getTotalBreakdownAmountAttribute()
     {
-        return $this->breakdowns->sum('amount') ?: 0;
+        return $this->breakdowns()->sum('amount');
     }
 }
