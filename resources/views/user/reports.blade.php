@@ -25,41 +25,7 @@
                 <div class="container py-4 py-lg-5">
                     <h1 class="mb-4">Financial Reports</h1>
 
-                    <!-- Month Filter -->
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title">Filter Reports</h5>
-                            <div class="row">
-                                <div class="col-md-4 mb-3">
-                                    <label for="monthFilter" class="form-label">Month</label>
-                                    <select class="form-select" id="monthFilter">
-                                        <option value="">All Months</option>
-                                        <option value="1">January</option>
-                                        <option value="2">February</option>
-                                        <option value="3">March</option>
-                                        <option value="4">April</option>
-                                        <option value="5">May</option>
-                                        <option value="6">June</option>
-                                        <option value="7">July</option>
-                                        <option value="8">August</option>
-                                        <option value="9">September</option>
-                                        <option value="10">October</option>
-                                        <option value="11">November</option>
-                                        <option value="12">December</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label for="yearFilter" class="form-label">Year</label>
-                                    <select class="form-select" id="yearFilter">
-                                        <option value="">All Years</option>
-                                        @for ($year = date('Y') - 2; $year <= date('Y') + 2; $year++)
-                                            <option value="{{ $year }}">{{ $year }}</option>
-                                        @endfor
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+
 
                     <!-- Financial Goals Table -->
                     <div class="card mb-4" id="goalsCard">
@@ -101,8 +67,8 @@
                                                         }
                                                     @endphp
                                                     <div class="progress">
-                                                        <div class="progress-bar {{ $badgeClass }}"
-                                                            role="progressbar" style="width: {{ $percentage }}%"
+                                                        <div class="progress-bar {{ $badgeClass }}" role="progressbar"
+                                                            style="width: {{ $percentage }}%"
                                                             aria-valuenow="{{ $percentage }}" aria-valuemin="0"
                                                             aria-valuemax="100">
                                                             {{ number_format($percentage, 2) }}%
@@ -130,6 +96,50 @@
                                 <h5 class="card-title">Weekly Breakdown: <span id="goalTitle"></span></h5>
                                 <button class="btn btn-sm btn-secondary" id="backToGoals">Back to Goals</button>
                             </div>
+
+                            <!-- Week Filter Controls - Hidden by default -->
+                            <div class="row mb-3 d-none" id="weekFilterControls">
+                                <div class="col-md-10">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h6>Filter Activity by Month</h6>
+                                            <div class="row">
+                                                <div class="col-md-5">
+                                                    <select class="form-select form-select-sm" id="weekMonthFilter">
+                                                        <option value="">All Months</option>
+                                                        <option value="1">January</option>
+                                                        <option value="2">February</option>
+                                                        <option value="3">March</option>
+                                                        <option value="4">April</option>
+                                                        <option value="5">May</option>
+                                                        <option value="6">June</option>
+                                                        <option value="7">July</option>
+                                                        <option value="8">August</option>
+                                                        <option value="9">September</option>
+                                                        <option value="10">October</option>
+                                                        <option value="11">November</option>
+                                                        <option value="12">December</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-5">
+                                                    <select class="form-select form-select-sm" id="weekYearFilter">
+                                                        <option value="">All Years</option>
+                                                        @for ($year = date('Y') - 2; $year <= date('Y') + 2; $year++)
+                                                            <option value="{{ $year }}">{{ $year }}
+                                                            </option>
+                                                        @endfor
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <button class="btn btn-sm btn-primary"
+                                                        id="resetWeekFilter">Reset</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="table-responsive">
                                 <table id="weeksTable" class="table table-striped">
                                     <thead>
@@ -138,6 +148,7 @@
                                             <th>Payable</th>
                                             <th>Collection</th>
                                             <th>Deficit</th>
+                                            <th>Date Updated</th>
                                             <th>Remarks</th>
                                         </tr>
                                     </thead>
@@ -147,6 +158,7 @@
                                     <tfoot>
                                         <tr>
                                             <th>Total</th>
+                                            <th></th>
                                             <th></th>
                                             <th></th>
                                             <th></th>
@@ -215,6 +227,13 @@
                         }
                     },
                     {
+                        title: "Date Updated",
+                        data: "updated_at",
+                        render: function(data) {
+                            return data ? new Date(data).toLocaleDateString() : '';
+                        }
+                    },
+                    {
                         title: "Remarks",
                         data: "remarks",
                         defaultContent: ""
@@ -259,10 +278,27 @@
                 // Show goal title
                 $('#goalTitle').text(goalTitle);
 
-                // Fetch weeks for this goal using AJAX
+                // Add month filter for weeks
+                $('#weekFilterControls').removeClass('d-none');
+
+                // Fetch all weeks for this goal using AJAX
+                loadWeeksForGoal(goalId);
+            });
+
+            // Function to load weeks for a goal
+            function loadWeeksForGoal(goalId, month = null, year = null) {
+                let url = '/financial-goals/' + goalId + '/weeks';
+                let params = {};
+
+                if (month && year) {
+                    params.month = month;
+                    params.year = year;
+                }
+
                 $.ajax({
-                    url: '/financial-goals/' + goalId + '/weeks',
+                    url: url,
                     method: 'GET',
+                    data: params,
                     success: function(response) {
                         // Clear the table first
                         weeksTable.clear();
@@ -273,7 +309,7 @@
                         } else {
                             // If no weeks data, show a message
                             $('#weeksTableBody').html(
-                                '<tr><td colspan="5" class="text-center">No weekly data available for this goal.</td></tr>'
+                                '<tr><td colspan="6" class="text-center">No weekly data available for this goal.</td></tr>'
                             );
                         }
 
@@ -286,16 +322,37 @@
                         alert('Failed to load weekly data');
                     }
                 });
+            }
+
+            // Handle week filter change
+            $('#weekMonthFilter, #weekYearFilter').on('change', function() {
+                const month = $('#weekMonthFilter').val();
+                const year = $('#weekYearFilter').val();
+
+                if (currentGoalId) {
+                    loadWeeksForGoal(currentGoalId, month, year);
+                }
+            });
+
+            // Reset week filter
+            $('#resetWeekFilter').on('click', function() {
+                $('#weekMonthFilter').val('');
+                $('#weekYearFilter').val('');
+
+                if (currentGoalId) {
+                    loadWeeksForGoal(currentGoalId);
+                }
             });
 
             // Handle back button
             $('#backToGoals').on('click', function() {
                 $('#weeksDetailCard').addClass('d-none');
                 $('#goalsCard').removeClass('d-none');
+                $('#weekFilterControls').addClass('d-none');
                 currentGoalId = null;
             });
 
-            // Handle month and year filtering
+            // Handle month and year filtering for goals table
             $('#monthFilter, #yearFilter').on('change', function() {
                 const month = $('#monthFilter').val();
                 const year = $('#yearFilter').val();

@@ -44,17 +44,32 @@ class UserController extends Controller
     /**
      * Get weeks for a specific financial goal.
      */
-    public function getGoalWeeks($goalId)
+    public function getGoalWeeks($goalId, Request $request)
     {
         // Verify the goal belongs to the authenticated user
         $goal = FinancialGoal::where('id', $goalId)
             ->where('user_id', Auth::id())
             ->firstOrFail();
             
-        $weeks = FinancialGoalWeeks::where('goal_id', $goalId)
-            ->orderBy('week_number', 'asc')
-            ->get();
-            
+        // Start query
+        $weeksQuery = FinancialGoalWeeks::where('goal_id', $goalId);
+        
+        // Apply month/year filter if provided
+        $month = $request->input('month');
+        $year = $request->input('year');
+        
+        if ($month && $year) {
+            $weeksQuery->whereRaw('MONTH(updated_at) = ?', [$month])
+                      ->whereRaw('YEAR(updated_at) = ?', [$year]);
+        } else if ($month) {
+            $weeksQuery->whereRaw('MONTH(updated_at) = ?', [$month]);
+        } else if ($year) {
+            $weeksQuery->whereRaw('YEAR(updated_at) = ?', [$year]);
+        }
+        
+        // Get the weeks, ensuring they're in order
+        $weeks = $weeksQuery->orderBy('week_number', 'asc')->get();
+        
         return response()->json(['weeks' => $weeks]);
     }
 }
