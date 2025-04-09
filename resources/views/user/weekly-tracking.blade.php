@@ -222,7 +222,8 @@
                         <div class="mb-3">
                             <label for="newWeekNumber" class="form-label">Week Number</label>
                             <input type="number" class="form-control" id="newWeekNumber" name="week_number"
-                                min="1" max="53" required>
+                                min="1" max="53" required readonly>
+                            <small class="text-muted">Week numbers are assigned automatically</small>
                         </div>
                         <div class="mb-3">
                             <label for="newWeekPayable" class="form-label">Payable Amount</label>
@@ -231,6 +232,8 @@
                                 <input type="number" class="form-control" id="newWeekPayable" name="payable"
                                     step="0.01" min="0" required>
                             </div>
+                            <small id="payableHelpText" class="text-muted">Calculated based on target amount and
+                                remaining weeks</small>
                         </div>
                         <div class="mb-3">
                             <label for="newWeekCollection" class="form-label">Collection Amount</label>
@@ -239,6 +242,7 @@
                                 <input type="number" class="form-control" id="newWeekCollection" name="collection"
                                     step="0.01" min="0" required>
                             </div>
+                            <small class="text-muted">How much you've actually collected this week</small>
                         </div>
                         <div class="mb-3">
                             <label for="newWeekRemarks" class="form-label">Remarks (Optional)</label>
@@ -297,13 +301,84 @@
             $('#addWeekBtn').on('click', function() {
                 $('#newWeekGoalId').val(selectedGoalId);
 
-                // Get the next week number based on existing weeks
+                // Get the goal details including target amount
                 $.ajax({
-                    url: `/financial-goals/${selectedGoalId}/next-week-number`,
+                    url: `/financial-goals/${selectedGoalId}`,
                     type: 'GET',
                     success: function(response) {
-                        $('#newWeekNumber').val(response.next_week_number);
-                        $('#addWeekModal').modal('show');
+                        if (response.status) {
+                            const goal = response.goal;
+                            const targetAmount = parseFloat(goal.target_amount);
+
+                            // Get existing weeks to calculate remaining amount
+                            $.ajax({
+                                url: `/financial-goals/${selectedGoalId}/weeks`,
+                                type: 'GET',
+                                success: function(weeksResponse) {
+                                    const weeks = weeksResponse.weeks;
+                                    let totalCollected = 0;
+
+                                    // Calculate total collected so far
+                                    if (weeks && weeks.length > 0) {
+                                        weeks.forEach(week => {
+                                            totalCollected += parseFloat(
+                                                week.collection);
+                                        });
+                                    }
+
+                                    // Calculate remaining amount needed
+                                    const remainingAmount = targetAmount -
+                                        totalCollected;
+
+                                    // Get the next week number
+                                    $.ajax({
+                                        url: `/financial-goals/${selectedGoalId}/next-week-number`,
+                                        type: 'GET',
+                                        success: function(weekResponse) {
+                                            const nextWeekNumber =
+                                                weekResponse
+                                                .next_week_number;
+                                            $('#newWeekNumber').val(
+                                                nextWeekNumber);
+
+                                            // Calculate how many weeks are left (assuming 4 total)
+                                            const weeksRemaining = Math
+                                                .max(4 - (
+                                                    nextWeekNumber -
+                                                    1), 1);
+
+                                            // Calculate suggested payable amount based on remaining amount and weeks
+                                            const suggestedPayable =
+                                                remainingAmount > 0 ?
+                                                (remainingAmount /
+                                                    weeksRemaining) :
+                                                (targetAmount / 4);
+
+                                            // Set the suggested payable amount
+                                            $('#newWeekPayable').val(
+                                                suggestedPayable
+                                                .toFixed(2));
+
+                                            // Update the help text to show remaining amount
+                                            $('#payableHelpText').html(`
+                                                Suggested amount based on remaining target: 
+                                                <strong>$${remainingAmount.toFixed(2)}</strong> ÷ 
+                                                <strong>${weeksRemaining}</strong> ${weeksRemaining === 1 ? 'week' : 'weeks'}
+                                            `);
+
+                                            // Show the modal
+                                            $('#addWeekModal').modal(
+                                                'show');
+                                        }
+                                    });
+                                }
+                            });
+                        } else {
+                            toastr.error('Error loading goal details');
+                        }
+                    },
+                    error: function() {
+                        toastr.error('Error loading goal details');
                     }
                 });
             });
